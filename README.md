@@ -280,8 +280,3 @@ echo "Mount complete. Remember to add to /etc/fstab for persistence!"
 df -h | grep xfusion-disk
 
 ```
-
-```
-
-
-```
