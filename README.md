@@ -283,6 +283,5 @@ df -h | grep xfusion-disk
 
 ```
 
-Did that resolve the rendering issues on your repository? Let me know if GitHub throws any other curveballs!
 
 ```
