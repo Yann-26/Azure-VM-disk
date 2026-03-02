@@ -1,26 +1,3 @@
-Ah, I see exactly what's going on! GitHub's markdown parser can be incredibly strict.
-
-Here is the breakdown of the two errors and how to fix them:
-
-### 1️⃣ The Mermaid Chart Error (Image 1)
-
-In Mermaid syntax, `[/` is the opening tag for a **parallelogram (slant) shape**. Because your path was `/mnt/xfusion-disk`, Mermaid saw `E[/` and expected a matching `\]` to close the shape. Since it ended with a standard `]`, it threw a lexical error.
-**The Fix:** Wrap the text inside the brackets in quotes so Mermaid treats it as a standard string: `E["/mnt/xfusion-disk"]`.
-
-### 2️⃣ The YAML Error (Image 2)
-
-"Error in user YAML... line 1 column 1" usually happens for two reasons:
-
-* **Invisible Characters:** Copy-pasting from the web or certain editors can introduce non-breaking spaces or zero-width characters at the very beginning of the file.
-* **Misread Frontmatter:** If a horizontal rule (`---`) is placed incorrectly near the top of the file, GitHub might mistake it for YAML frontmatter and try to parse the markdown as code.
-
----
-
-### The Fully Corrected Code
-
-I have scrubbed the text of any hidden non-breaking spaces and fixed the Mermaid syntax. Copy and paste this directly into your GitHub `README.md`:
-
-```markdown
 # 🚀 Azure VM Disk Expansion & Data Disk Mount (Production Guide)
 
 ![Azure](https://img.shields.io/badge/Cloud-Microsoft_Azure-0078D4?style=for-the-badge&logo=microsoftazure)
