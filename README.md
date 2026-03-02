@@ -1,9 +1,11 @@
+---
 
+```markdown
 # 🚀 Azure VM Disk Expansion & Data Disk Mount (Production Guide)
 
-![Azure](https://img.shields.io/badge/Cloud-Microsoft_Azure-0078D4?style=for-the-badge\&logo=microsoftazure)
-![Linux](https://img.shields.io/badge/OS-Linux-FCC624?style=for-the-badge\&logo=linux)
-![Bash](https://img.shields.io/badge/Scripting-Bash-4EAA25?style=for-the-badge\&logo=gnubash)
+![Azure](https://img.shields.io/badge/Cloud-Microsoft_Azure-0078D4?style=for-the-badge&logo=microsoftazure)
+![Linux](https://img.shields.io/badge/OS-Linux-FCC624?style=for-the-badge&logo=linux)
+![Bash](https://img.shields.io/badge/Scripting-Bash-4EAA25?style=for-the-badge&logo=gnubash)
 ![DevOps](https://img.shields.io/badge/Role-DevOps_Engineer-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Project-Production_Ready-success?style=for-the-badge)
 
@@ -30,6 +32,7 @@ flowchart TD
     B --> C[OS Disk - 64Gi]
     B --> D[Data Disk - 64Gi]
     D --> E[/mnt/xfusion-disk]
+
 ```
 
 ---
@@ -48,6 +51,7 @@ sequenceDiagram
     DevOps->>VM: Format Disk
     DevOps->>VM: Mount Disk
     DevOps->>VM: Update /etc/fstab
+
 ```
 
 ---
@@ -65,14 +69,26 @@ az disk update \
   --resource-group kml_rg_main-2169e452295d4440 \
   --name <OS_DISK_NAME> \
   --size-gb 64
+
 ```
 
-Inside VM:
+### Inside VM
+
+*Note: In Azure, `/dev/sdb` is the temporary resource disk. The OS disk is typically `/dev/sda`.*
 
 ```bash
-sudo growpart /dev/sdb 1
-sudo resize2fs /dev/sdb1
+# Expand the partition (assuming partition 1 on sda)
+sudo growpart /dev/sda 1
+
+# Expand the filesystem (ext4)
+sudo resize2fs /dev/sda1
+
+# Note: If your OS uses XFS (e.g., RHEL/CentOS), use this instead:
+# sudo xfs_growfs /
+
+# Verify the new size
 df -h
+
 ```
 
 ---
@@ -85,6 +101,7 @@ az disk create \
   --name xfusion-disk \
   --size-gb 64 \
   --sku Standard_LRS
+
 ```
 
 Attach:
@@ -94,20 +111,22 @@ az vm disk attach \
   --resource-group kml_rg_main-2169e452295d4440 \
   --vm-name xfusion-vm \
   --name xfusion-disk
+
 ```
 
 ---
 
 ## 3️⃣ Configure Disk Inside VM
 
-Rescan:
+Rescan and identify the new disk:
 
 ```bash
 sudo partprobe
 lsblk
+
 ```
 
-Identify unused 64Gi disk.
+*Identify the unused 64Gi disk (e.g., `/dev/sdc` or `/dev/sdd`).*
 
 ---
 
@@ -115,6 +134,7 @@ Identify unused 64Gi disk.
 
 ```bash
 sudo mkfs.ext4 /dev/sdX
+
 ```
 
 ---
@@ -123,6 +143,7 @@ sudo mkfs.ext4 /dev/sdX
 
 ```bash
 sudo mkdir -p /mnt/xfusion-disk
+
 ```
 
 ---
@@ -132,6 +153,7 @@ sudo mkdir -p /mnt/xfusion-disk
 ```bash
 sudo mount /dev/sdX /mnt/xfusion-disk
 df -h
+
 ```
 
 ---
@@ -142,24 +164,28 @@ Get UUID:
 
 ```bash
 sudo blkid /dev/sdX
+
 ```
 
 Edit fstab:
 
 ```bash
 sudo vi /etc/fstab
-```
-
-Add:
 
 ```
+
+Add the following line at the end of the file:
+
+```text
 UUID=<your-uuid>   /mnt/xfusion-disk   ext4   defaults,nofail   0   2
+
 ```
 
-Test:
+Test the `fstab` configuration (Crucial to prevent boot failures):
 
 ```bash
 sudo mount -a
+
 ```
 
 ---
@@ -168,8 +194,9 @@ sudo mount -a
 
 * Verified disk before formatting
 * Used UUID instead of device name
-* Tested mount before reboot
-* Avoided formatting OS disk
+* Tested mount before reboot with `mount -a`
+* Included `nofail` in fstab to prevent VM boot crash if disk is detached
+* Avoided touching the Azure temporary disk (`/dev/sdb`)
 * Followed cloud-first provisioning model
 
 ---
@@ -186,11 +213,11 @@ sudo mount -a
 
 # 📊 Before & After Snapshot
 
-| Component   | Before | After             |
-| ----------- | ------ | ----------------- |
-| OS Disk     | 32Gi   | 64Gi              |
-| Data Disk   | None   | 64Gi              |
-| Mount Point | N/A    | /mnt/xfusion-disk |
+| Component | Before | After |
+| --- | --- | --- |
+| OS Disk | 32Gi | 64Gi |
+| Data Disk | None | 64Gi |
+| Mount Point | N/A | /mnt/xfusion-disk |
 
 ---
 
@@ -226,6 +253,7 @@ az disk create \
   --name xfusion-disk \
   --size-gb 64 \
   --sku Standard_LRS
+
 ```
 
 ---
@@ -238,6 +266,7 @@ az vm disk attach \
   --resource-group kml_rg_main-2169e452295d4440 \
   --vm-name xfusion-vm \
   --name xfusion-disk
+
 ```
 
 ---
@@ -246,9 +275,23 @@ az vm disk attach \
 
 ```bash
 #!/bin/bash
-sudo partprobe
+# Prompt user for the correct device name
 lsblk
-echo "Identify correct disk before formatting."
+read -p "Enter the device name to format and mount (e.g., sdc): " dev_name
+
+echo "Formatting /dev/$dev_name..."
+sudo mkfs.ext4 /dev/$dev_name
+
+echo "Mounting to /mnt/xfusion-disk..."
+sudo mkdir -p /mnt/xfusion-disk
+sudo mount /dev/$dev_name /mnt/xfusion-disk
+
+echo "Mount complete. Remember to add to /etc/fstab for persistence!"
+df -h | grep xfusion-disk
+
 ```
 
----
+```
+
+***
+```
