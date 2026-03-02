@@ -1,5 +1,9 @@
 ---
 
+### The Fully Corrected Code
+
+I have scrubbed the text of any hidden non-breaking spaces and fixed the Mermaid syntax. Copy and paste this directly into your GitHub `README.md`:
+
 ```markdown
 # 🚀 Azure VM Disk Expansion & Data Disk Mount (Production Guide)
 
@@ -24,20 +28,20 @@ This reflects real-world DevOps cloud storage operations.
 
 ---
 
-# 🏗️ Architecture Diagram
+## 🏗️ Architecture Diagram
 
 ```mermaid
 flowchart TD
     A[Azure Portal / CLI] --> B[xfusion-vm]
     B --> C[OS Disk - 64Gi]
     B --> D[Data Disk - 64Gi]
-    D --> E[/mnt/xfusion-disk]
+    D --> E["/mnt/xfusion-disk"]
 
 ```
 
 ---
 
-# 🔁 Workflow Diagram
+## 🔁 Workflow Diagram
 
 ```mermaid
 sequenceDiagram
@@ -56,13 +60,13 @@ sequenceDiagram
 
 ---
 
-# 🚀 Implementation Steps
+## 🚀 Implementation Steps
 
 ---
 
-## 1️⃣ Resize OS Disk
+### 1️⃣ Resize OS Disk
 
-### Using Azure CLI
+**Using Azure CLI**
 
 ```bash
 az disk update \
@@ -72,8 +76,7 @@ az disk update \
 
 ```
 
-### Inside VM
-
+**Inside VM**
 *Note: In Azure, `/dev/sdb` is the temporary resource disk. The OS disk is typically `/dev/sda`.*
 
 ```bash
@@ -93,7 +96,7 @@ df -h
 
 ---
 
-## 2️⃣ Create & Attach Data Disk
+### 2️⃣ Create & Attach Data Disk
 
 ```bash
 az disk create \
@@ -116,7 +119,7 @@ az vm disk attach \
 
 ---
 
-## 3️⃣ Configure Disk Inside VM
+### 3️⃣ Configure Disk Inside VM
 
 Rescan and identify the new disk:
 
@@ -128,27 +131,21 @@ lsblk
 
 *Identify the unused 64Gi disk (e.g., `/dev/sdc` or `/dev/sdd`).*
 
----
-
-### Format Disk
+**Format Disk**
 
 ```bash
 sudo mkfs.ext4 /dev/sdX
 
 ```
 
----
-
-### Create Mount Directory
+**Create Mount Directory**
 
 ```bash
 sudo mkdir -p /mnt/xfusion-disk
 
 ```
 
----
-
-### Mount Disk
+**Mount Disk**
 
 ```bash
 sudo mount /dev/sdX /mnt/xfusion-disk
@@ -158,7 +155,7 @@ df -h
 
 ---
 
-# 💾 Persistent Mount Configuration
+## 💾 Persistent Mount Configuration
 
 Get UUID:
 
@@ -190,7 +187,7 @@ sudo mount -a
 
 ---
 
-# 🔐 Best Practices Applied
+## 🔐 Best Practices Applied
 
 * Verified disk before formatting
 * Used UUID instead of device name
@@ -201,7 +198,7 @@ sudo mount -a
 
 ---
 
-# 🧠 DevOps Skills Demonstrated
+## 🧠 DevOps Skills Demonstrated
 
 * Azure Infrastructure Management
 * Linux Disk & Filesystem Management
@@ -211,7 +208,7 @@ sudo mount -a
 
 ---
 
-# 📊 Before & After Snapshot
+## 📊 Before & After Snapshot
 
 | Component | Before | After |
 | --- | --- | --- |
@@ -221,7 +218,7 @@ sudo mount -a
 
 ---
 
-# 👤 Author
+## 👤 Author
 
 **Yann Assiri**
 DevOps / Cloud Engineer
@@ -229,7 +226,7 @@ GitHub: [https://github.com/YOUR_USERNAME](https://github.com/YOUR_USERNAME)
 
 ---
 
-# ⭐ Why This Project Matters
+## ⭐ Why This Project Matters
 
 This simulates real-world cloud operations tasks performed by DevOps engineers:
 
@@ -240,7 +237,7 @@ This simulates real-world cloud operations tasks performed by DevOps engineers:
 
 ---
 
-# 📂 Suggested Supporting Scripts
+## 📂 Suggested Supporting Scripts
 
 Inside `scripts/`:
 
@@ -293,5 +290,6 @@ df -h | grep xfusion-disk
 
 ```
 
-***
+Did that resolve the rendering issues on your repository? Let me know if GitHub throws any other curveballs!
+
 ```
